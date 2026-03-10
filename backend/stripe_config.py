@@ -1,3 +1,5 @@
 import stripe
+import os
 
-stripe.api_key = "sk_test_51T7AN1FJZUkJ7d4IpEEUspQ9eEIuNvn6zijGIHgBFeh2G56wGQhZSOFvxEhDnoV38ZqED604j3OiN0khzTjOPydR00gjZB1W2w"
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+

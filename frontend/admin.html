@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f6f9;
+text-align:center;
+}
+
+.container{
+margin-top:60px;
+}
+
+button{
+padding:10px 20px;
+margin:10px;
+background:#343a40;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+button:hover{
+background:#212529;
+}
+
+table{
+margin:auto;
+margin-top:30px;
+border-collapse:collapse;
+width:80%;
+background:white;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:10px;
+}
+
+th{
+background:#007bff;
+color:white;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🚖 Admin Dashboard</h1>
+
+<div class="container">
+
+<button onclick="loadRides()">View Rides</button>
+<button onclick="loadDrivers()">View Drivers</button>
+<button onclick="loadPayments()">View Payments</button>
+
+<table id="dataTable"></table>
+
+</div>
+
+<script>
+
+async function loadRides(){
+
+const res = await fetch("http://127.0.0.1:8000/admin/rides")
+const data = await res.json()
+
+renderTable(data)
+}
+
+async function loadDrivers(){
+
+const res = await fetch("http://127.0.0.1:8000/admin/drivers")
+const data = await res.json()
+
+renderTable(data)
+}
+
+async function loadPayments(){
+
+const res = await fetch("http://127.0.0.1:8000/admin/payments")
+const data = await res.json()
+
+renderTable(data)
+}
+
+function renderTable(data){
+
+const table = document.getElementById("dataTable")
+
+table.innerHTML=""
+
+if(data.length==0){
+table.innerHTML="<tr><td>No data</td></tr>"
+return
+}
+
+let headers = Object.keys(data[0])
+
+let headerRow="<tr>"
+
+headers.forEach(h=>{
+headerRow += `<th>${h}</th>`
+})
+
+headerRow+="</tr>"
+
+table.innerHTML+=headerRow
+
+data.forEach(row=>{
+
+let rowHTML="<tr>"
+
+headers.forEach(h=>{
+rowHTML += `<td>${row[h]}</td>`
+})
+
+rowHTML+="</tr>"
+
+table.innerHTML+=rowHTML
+
+})
+
+}
+
+</script>
+
+</body>
+</html>

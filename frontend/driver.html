@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Driver Panel</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f6f9;
+text-align:center;
+}
+
+.container{
+margin-top:80px;
+}
+
+.card{
+background:white;
+width:400px;
+margin:auto;
+padding:30px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+button{
+padding:12px 20px;
+margin:10px;
+background:#007bff;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+button:hover{
+background:#0056b3;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h2>🚖 Driver Panel</h2>
+
+<button onclick="updateLocation()">Update Location</button>
+<button onclick="acceptRide()">Accept Ride</button>
+<button onclick="startRide()">Start Ride</button>
+<button onclick="completeRide()">Complete Ride</button>
+
+<p id="driverStatus"></p>
+
+</div>
+
+</div>
+
+<script>
+
+let rideId = 1
+let driverId = 201
+
+async function updateLocation(){
+
+await fetch("http://127.0.0.1:8000/drivers/location",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+driver_id:driverId,
+lat:17.3851,
+lng:78.4867
+})
+})
+
+document.getElementById("driverStatus").innerText="Location Updated"
+}
+
+async function acceptRide(){
+
+await fetch(`http://127.0.0.1:8000/rides/${rideId}/accept?driver_id=${driverId}`,{
+method:"POST"
+})
+
+document.getElementById("driverStatus").innerText="Ride Accepted"
+}
+
+async function startRide(){
+
+await fetch(`http://127.0.0.1:8000/rides/${rideId}/start`,{
+method:"POST"
+})
+
+document.getElementById("driverStatus").innerText="Ride Started"
+}
+
+async function completeRide(){
+
+await fetch(`http://127.0.0.1:8000/rides/${rideId}/complete`,{
+method:"POST"
+})
+
+document.getElementById("driverStatus").innerText="Ride Completed"
+}
+
+</script>
+
+</body>
+</html>

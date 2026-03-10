@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Rider Panel</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f4f6f9;
+text-align:center;
+}
+
+.container{
+margin-top:80px;
+}
+
+button{
+padding:12px 20px;
+margin:10px;
+background:#28a745;
+color:white;
+border:none;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1e7e34;
+}
+
+.card{
+background:white;
+width:400px;
+margin:auto;
+padding:30px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h2>🚕 Rider Panel</h2>
+
+<button onclick="requestRide()">Request Ride</button>
+<button onclick="createPayment()">Pay Ride</button>
+
+<p id="status"></p>
+
+</div>
+
+</div>
+
+<script>
+
+let rideId = null
+
+async function requestRide(){
+
+const res = await fetch("http://127.0.0.1:8000/rides/request",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+rider_id:1,
+pickup_lat:17.3851,
+pickup_lng:78.4867,
+drop_lat:17.4399,
+drop_lng:78.4983
+})
+})
+
+const data = await res.json()
+
+rideId = data.id
+
+document.getElementById("status").innerText =
+"Ride requested. Status: " + data.status + " Ride ID: " + rideId
+}
+
+async function createPayment(){
+
+if(!rideId){
+alert("No ride found")
+return
+}
+
+const res = await fetch(`http://127.0.0.1:8000/rides/${rideId}/create-payment`,{
+method:"POST"
+})
+
+const data = await res.json()
+
+alert("Payment client secret received")
+
+}
+
+</script>
+
+</body>
+</html>

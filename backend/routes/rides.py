@@ -53,17 +53,16 @@ def request_ride(data: RideCreate, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(ride)
 
-    nearby_drivers = redis_client.georadius(
-        "drivers",
-        data.pickup_lng,
-        data.pickup_lat,
-        50,
-        unit="km",
-        withdist=True,
-        sort="ASC"
-    )
-
-    assigned_driver = None
+    if redis_client:
+        nearby_drivers = redis_client.georadius(
+            "drivers",
+            request.pickup_lng,
+            request.pickup_lat,
+            5,
+            unit="km"
+        )
+    else:
+        nearby_drivers = []
 
     for driver in nearby_drivers:
         driver_id = int(driver[0])

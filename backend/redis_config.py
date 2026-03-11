@@ -1,3 +1,3 @@
 import redis
 
-redis_client = None
+redis_client = redis.from_url(os.getenv("REDIS_URL"))

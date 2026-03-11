@@ -1,5 +1,5 @@
+from sqlmodel import SQLModel, create_engine, Session
 import os
-from sqlmodel import SQLModel, create_engine,Session
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 

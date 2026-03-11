@@ -1,11 +1,9 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from database import get_session
 from models import Ride, RideCreate, Driver, Payment, Review, ReviewCreate
-from services.matching import calculate_distance
 from websocket_manager import manager
 from stripe_config import stripe
-from config import endpoint_secret
 from redis_config import redis_client
 from services.fare_service import calculate_fare
 from pydantic import BaseModel
@@ -53,16 +51,19 @@ def request_ride(data: RideCreate, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(ride)
 
+    # Redis driver search
     if redis_client:
         nearby_drivers = redis_client.georadius(
             "drivers",
-            request.pickup_lng,
-            request.pickup_lat,
+            data.pickup_lng,
+            data.pickup_lat,
             5,
             unit="km"
         )
     else:
         nearby_drivers = []
+
+    assigned_driver = None
 
     for driver in nearby_drivers:
         driver_id = int(driver[0])
@@ -156,16 +157,17 @@ async def accept_ride(ride_id: int, driver_id: int, session: Session = Depends(g
 @router.post("/drivers/location")
 def update_driver_location(data: DriverLocationUpdate):
 
-    redis_client.geoadd(
-        "drivers",
-        (data.lng, data.lat, data.driver_id)
-    )
+    if redis_client:
+        redis_client.geoadd(
+            "drivers",
+            (data.lng, data.lat, data.driver_id)
+        )
 
-    redis_client.setex(
-        f"driver_active:{data.driver_id}",
-        30,
-        "online"
-    )
+        redis_client.setex(
+            f"driver_active:{data.driver_id}",
+            30,
+            "online"
+        )
 
     return {"message": "Driver location updated"}
 
@@ -207,6 +209,7 @@ def complete_ride(ride_id: int, session: Session = Depends(get_session)):
         "driver_id": ride.driver_id
     }
 
+
 @router.post("/rides/{ride_id}/create-payment")
 async def create_payment(ride_id: int, session: Session = Depends(get_session)):
 
@@ -236,6 +239,7 @@ async def create_payment(ride_id: int, session: Session = Depends(get_session)):
 
     return {"client_secret": payment_intent.client_secret}
 
+
 @router.post("/rides/{ride_id}/review")
 def add_review(ride_id: int, data: ReviewCreate, session: Session = Depends(get_session)):
 
@@ -258,6 +262,7 @@ def add_review(ride_id: int, data: ReviewCreate, session: Session = Depends(get_
 
     return review
 
+
 @router.get("/rides/{ride_id}/receipt")
 def generate_receipt(ride_id: int, session: Session = Depends(get_session)):
 
@@ -274,6 +279,7 @@ def generate_receipt(ride_id: int, session: Session = Depends(get_session)):
         "status": ride.status
     }
 
+
 @router.get("/drivers/{driver_id}/reviews")
 def get_driver_reviews(driver_id: int, session: Session = Depends(get_session)):
 
@@ -281,27 +287,6 @@ def get_driver_reviews(driver_id: int, session: Session = Depends(get_session)):
     reviews = session.exec(statement).all()
 
     return reviews
-
-
-@router.get("/rides/{ride_id}/receipt")
-def generate_receipt(ride_id: int, session: Session = Depends(get_session)):
-
-    ride = session.get(Ride, ride_id)
-
-    if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found")
-
-    html = f"""
-    <h1>Ride Receipt</h1>
-    <p>Ride ID: {ride.id}</p>
-    <p>Rider: {ride.rider_id}</p>
-    <p>Driver: {ride.driver_id}</p>
-    <p>Fare: {ride.fare_estimate}</p>
-    """
-
-    HTML(string=html).write_pdf("receipt.pdf")
-
-    return FileResponse("receipt.pdf")
 
 
 @router.get("/admin/rides")

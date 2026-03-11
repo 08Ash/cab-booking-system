@@ -51,14 +51,60 @@ Stripe Payment API
 
 #  Deployment
 
-Backend API deployed on Render:
+The backend is deployed using **Render Web Services**.
+
+### Step 1 — Push project to GitHub
+
+
+git init
+git add .
+git commit -m "cab booking system"
+git push
+
+### Step 2 — Connect GitHub repository to Render
+
+Render automatically pulls the repository and deploys the backend service.
+
+### Step 3 — Build Command
+
+
+pip install -r backend/requirements.txt
+
+
+This installs all project dependencies such as FastAPI, SQLModel, Redis, and Stripe.
+
+---
+
+### Step 4 — Start Command
+
+
+uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+
+
+This command starts the FastAPI application on the Render server.
+
+---
+
+### Step 5 — Environment Variables
+
+Sensitive credentials are stored securely using environment variables.
+
+
+DATABASE_URL
+STRIPE_SECRET_KEY
+
+# 🌐 Live Deployment
+
+Backend API
+
 
 https://cab-booking-api-sdjk.onrender.com
 
-Swagger API documentation:
+
+Swagger API Documentation
+
 
 https://cab-booking-api-sdjk.onrender.com/docs
-
 
 
 # 📂 Project Structure
